@@ -3292,6 +3292,7 @@ def main():
     parser.add_argument('-F', '--format', help="Desired subtitle format", default="srt")
     parser.add_argument('-lf', '--list-formats', help="List all supported subtitle formats", action='store_true')
     parser.add_argument('-C', '--concurrency', help="Number of concurrent translate API requests to make", type=int, default=10)
+    parser.add_argument('-ko', '--keep-source', help="Boolean value (True or False) for keeping original language subtitle file", type=bool, default=False)
     parser.add_argument('-es', '--embed-src', help="Boolean value (True or False) for embedding original language subtitle file into media file", type=bool, default=False)
     parser.add_argument('-ed', '--embed-dst', help="Boolean value (True or False) for embedding translated subtitle file into media file", type=bool, default=False)
     parser.add_argument('-fr', '--force-recognize', help="Boolean value (True or False) for re-recognize media file event if it's already has subtitles stream", type=bool, default=False)
