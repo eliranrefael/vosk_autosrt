@@ -3416,6 +3416,7 @@ def main():
     embedded_media_filepath = None
 
     subtitle_format = args.format
+    keep_source = args.keep
 
     removed_media_filepaths = []
     processed_list = []
@@ -3539,7 +3540,7 @@ def main():
                         writer = SubtitleWriter(subtitle_stream_regions, subtitle_stream_transcripts, subtitle_format, error_messages_callback=show_error_messages)
                         writer.write(src_subtitle_filepath)
 
-                    # ffmpeg_src_language_code subtitle stream not exist, just print it
+                    # ffmpeg_src_language_code subtitle stream does not exist, just print it
                     else:
                         print(f"Is '{ffmpeg_src_language_code}' subtitles stream exist         : No")
 
@@ -3882,7 +3883,12 @@ def main():
                         translation_writer = SubtitleWriter(created_regions, translated_subtitles, subtitle_format, error_messages_callback=show_error_messages)
                         translation_writer.write(dst_subtitle_filepath)
 
-                        print(f"Original subtitles file saved as        : '{src_subtitle_filepath}'")
+                        if keep_source == True:
+                            print(f"Original subtitles file saved as        : '{src_subtitle_filepath}'")
+                        else:
+                            os.remove(src_subtitle_filepath)
+                            
+                        
                         print(f"Translated subtitles file saved as      : '{dst_subtitle_filepath}'")
 
                         if media_type == "audio":
