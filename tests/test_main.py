@@ -14,11 +14,11 @@ def get_src_lang():
 def get_des_lang():
     return "fr"
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="module")
 def subs_cleanup():
     yield
     for srt_file in glob.glob("*.srt"):
-        os.remove(srt_file)
+        os.unlink(srt_file)
 
 @pytest.fixture
 def video_file_path():
@@ -47,26 +47,48 @@ def video_file_path():
     return video_mock_file_path
 
 
-def test_command_runs(video_file_path):
-    """Test subs generation with no translation"""
-    result = subprocess.run(["vosk_autosrt", "-S", f"{get_src_lang()}", f"{video_file_path}"], capture_output=True, text=True)
+def test_command_runs(video_file_path):   
+    """
+        Test subs generation with no translation
+    """
+
+    result = subprocess.run(["Python", "..\\win\\vosk_autosrt.py", "-S", f"{get_src_lang()}", f"{video_file_path}"], capture_output=True, text=True)
     assert result.returncode == 0, f"Command failed: {result.stderr}"
     print("run successfully with no translation")
-    test_files_created()
+    test_files_created(subs_cleanup)
 
-    result = subprocess.run(["vosk_autosrt", "-S", f"{get_src_lang()}", "-D", f"{get_des_lang()}", f"{video_file_path}"], capture_output=True, text=True)
+    result = subprocess.run(["..\\win\\vosk_autosrt.py", "-S", f"{get_src_lang()}", "-D", f"{get_des_lang()}", f"{video_file_path}"], capture_output=True, text=True)
     assert result.returncode == 0, f"Command failed: {result.stderr}"
     print("run successfully with translation")
-    test_files_created(translation=True)
+    test_files_created(subs_cleanup, translation=True)
+
+    result = subprocess.run(["..\\win\\vosk_autosrt.py", "-S", f"{get_src_lang()}", "-D", f"{get_des_lang()}", "-ks", f"{video_file_path}"], capture_output=True, text=True)
+    assert result.returncode == 0, f"Command failed: {result.stderr}"
+    print("run successfully with translation and source subs cleanup")
+    test_files_created(subs_cleanup, translation=True, keep_src_output=True)
 
     os.remove(video_file_path)
 
 
-def test_files_created (translation = False, keep_src_output = True, subs_file_ext = "srt"):
+def test_files_created (subs_cleanup, translation = False, keep_src_output = False, subs_file_ext = "srt"):
+    """
+    Tests if subs files were created.
+
+    Args:
+        subs_cleanup: (fixture) files cleanup teardown.
+        translation: (bool): is translation expected.
+        keep_src_output (bool): is source subs expected.
+    """
+    
     if keep_src_output:
         src_subs_file_path = f"{get_media_file_name()}.{get_src_lang()}.{subs_file_ext}"
         output_file = Path(src_subs_file_path)
         assert output_file.exists(), f"Missing file: {src_subs_file_path}"
+    else:
+        src_subs_file_path = f"{get_media_file_name()}.{get_src_lang()}.{subs_file_ext}"
+        output_file = Path(src_subs_file_path)
+        assert not output_file.exists(), f"Unnecessary file: {src_subs_file_path}"
+
     
     if translation:
         des_subs_file_path = f"{get_media_file_name()}.{get_des_lang()}.{subs_file_ext}"
